@@ -1,11 +1,12 @@
 import pandas as pd
 import spacy
+import joblib
 
 nlp = spacy.load('en_core_web_sm')
 df = pd.read_csv('train.csv')
 df_clean = df
-df_clean['isToxic'] = df[['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate', ]].any(axis=1).astype(int)
-df_clean = df_clean[['comment_text', 'isToxic']]
+df_clean['isToxic'] = df[['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate']].any(axis=1).astype(int)
+df_clean = df_clean[['comment_text', 'isToxic']].copy()
 df_clean.rename(columns={'comment_text': 'Text'}, inplace=True)
 df_toxic = df_clean[df_clean['isToxic'] == 1]
 df_non_toxic = df_clean[df_clean['isToxic'] == 0].sample(n=len(df_toxic))
@@ -31,3 +32,5 @@ model = LogisticRegression()
 model.fit(X_train, Y_train)
 y_pred = model.predict(X_test)
 accuracy_score(Y_test, y_pred)
+
+joblib.dump(model, 'model.joblib')
