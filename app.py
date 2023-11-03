@@ -18,8 +18,7 @@ df_clean['isToxic'] = df[['toxic', 'severe_toxic', 'obscene', 'threat', 'insult'
 df_clean = df_clean[['comment_text', 'isToxic']].copy()
 df_clean.rename(columns={'comment_text': 'Text'}, inplace=True)
 
-app = Flask(__name__
-            )
+app = Flask(__name__)
 
 @app.route('/')
 def home():
