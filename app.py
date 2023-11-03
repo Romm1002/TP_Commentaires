@@ -1,32 +1,25 @@
 from flask import Flask, request, render_template
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import MaxAbsScaler
 import spacy
+import joblib
 import pandas as pd
 
 # Chargez votre modèle Spacy et initialisez le vectorizer
 nlp = spacy.load('en_core_web_sm')
 vectorizer = TfidfVectorizer()
 
-# Chargez vos données d'entraînement et entraînez votre modèle Logistic Regression
+# Chargez votre modèle d'IA à l'aide de joblib
+model = joblib.load('model.joblib')
+
+# Chargez vos données d'entraînement et préparez df_clean
 df = pd.read_csv('train.csv')
 df_clean = df
 df_clean['isToxic'] = df[['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate']].any(axis=1).astype(int)
-# df_clean = df_clean[['comment_text', 'isToxic']]
-# df_clean.rename(columns={'comment_text': 'Text'}, inplace=True)
 df_clean = df_clean[['comment_text', 'isToxic']].copy()
 df_clean.rename(columns={'comment_text': 'Text'}, inplace=True)
 
-X = vectorizer.fit_transform(df_clean['Text'])
-Y = df_clean['isToxic']
-# model = LogisticRegression()
-model = LogisticRegression(solver='lbfgs', max_iter=1000)
-model.fit(X, Y)
-scaler = MaxAbsScaler()
-X_scaled = scaler.fit_transform(X)
-
-app = Flask(__name__)
+app = Flask(__name__
+            )
 
 @app.route('/')
 def home():
@@ -41,7 +34,10 @@ def classify():
     treated_tokens = [w.text for w in spacy_comment if w.is_alpha and not w.is_stop]
     treated_comment = " ".join(treated_tokens)
     
-    # Utilisez le vectorizer pour transformer le commentaire en fonction de vos données d'entraînement
+    # Ajustez le vectorizer avec le vocabulaire des données d'entraînement
+    vectorizer.fit(df_clean['Text'])
+
+    # Utilisez le vectorizer pour transformer le commentaire
     comment_vector = vectorizer.transform([treated_comment])
     
     # Appelez le modèle pour prédire la classification
