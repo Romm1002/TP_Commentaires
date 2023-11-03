@@ -27,8 +27,7 @@ def home():
 
 @app.route('/classify', methods=['POST'])
 def classify():
-    comment = request.form['comment']
-
+    comment = request.json.get('comment')
     # Traitez le commentaire de la même manière que vous l'avez fait pour votre modèle
     spacy_comment = nlp(comment, disable=["parser", "tagger", "ner", "textcat"])
     treated_tokens = [w.text for w in spacy_comment if w.is_alpha and not w.is_stop]
@@ -43,7 +42,7 @@ def classify():
     # Appelez le modèle pour prédire la classification
     result = model.predict(comment_vector)
 
-    return f"Le commentaire est {'toxique' if result == 1 else 'non toxique'}."
+    return f"Ce commentaire est {'impoli :( ' if result == 1 else 'poli'}."
 
 if __name__ == '__main__':
     app.run()
