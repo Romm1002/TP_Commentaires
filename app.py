@@ -4,19 +4,15 @@ import spacy
 import joblib
 import pandas as pd
 
-# Chargez votre modèle Spacy et initialisez le vectorizer
+# Charger votre modèle Spacy et initialisez le vectorizer
 nlp = spacy.load('en_core_web_sm')
 vectorizer = TfidfVectorizer()
 
-# Chargez votre modèle d'IA à l'aide de joblib
+# Charger le modèle d'IA à l'aide de joblib
 model = joblib.load('model.joblib')
 
-# Chargez vos données d'entraînement et préparez df_clean
-df = pd.read_csv('train.csv')
-df_clean = df
-df_clean['isToxic'] = df[['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate']].any(axis=1).astype(int)
-df_clean = df_clean[['comment_text', 'isToxic']].copy()
-df_clean.rename(columns={'comment_text': 'Text'}, inplace=True)
+# Charger le vectorizer à l'aide de joblib
+vectorizer = joblib.load('vectorizer.joblib')
 
 app = Flask(__name__)
 
@@ -32,16 +28,13 @@ def classify():
     treated_tokens = [w.text for w in spacy_comment if w.is_alpha and not w.is_stop]
     treated_comment = " ".join(treated_tokens)
     
-    # Ajustez le vectorizer avec le vocabulaire des données d'entraînement
-    vectorizer.fit(df_clean['Text'])
-
     # Utilisez le vectorizer pour transformer le commentaire
     comment_vector = vectorizer.transform([treated_comment])
     
     # Appelez le modèle pour prédire la classification
     result = model.predict(comment_vector)
 
-    return f"Ce commentaire est {'impoli :( ' if result == 1 else 'poli'}."
+    return f"Ce commentaire est {'malpoli :( ' if result == 1 else 'poli'}."
 
 if __name__ == '__main__':
     app.run()
